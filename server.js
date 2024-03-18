@@ -1,55 +1,55 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-// Endpoint to handle POST requests to /bfhl
-app.post('/bfhl', (req, res) => {
-    try {
-        const data = req.body.data;
-        const response = processData(data);
-
-        res.json({
-            is_success: true,
-            user_id: "john_doe_17091999",
-            email: "john@xyz.com",
-            roll_number: "ABCD123",
-            ...response
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+app.post("/bfhl", (req, res) => {
+  try {
+    const { data } = req.body;
+    if (!data || !Array.isArray(data)) {
+      throw new Error(
+        'Invalid input. Please provide an array under the key "data".'
+      );
     }
-});
 
-// Function to process the data and generate the response
-function processData(data) {
+    const user_id = "john_doe_17091999"; // Replace this with your user ID logic
+
     const evenNumbers = [];
     const oddNumbers = [];
-    const alphabets = [];
+    const uppercaseAlphabets = [];
 
-    data.forEach(item => {
-        if (typeof item === 'number') {
-            if (item % 2 === 0) {
-                evenNumbers.push(item.toString());
-            } else {
-                oddNumbers.push(item.toString());
-            }
-        } else if (typeof item === 'string') {
-            alphabets.push(item.toUpperCase());
+    for (const item of data) {
+      if (typeof item === "string" && /^[a-zA-Z]$/.test(item)) {
+        uppercaseAlphabets.push(item.toUpperCase());
+      } else {
+        const num = parseInt(item);
+        if (!isNaN(num)) {
+          if (num % 2 === 0) {
+            evenNumbers.push(num);
+          } else {
+            oddNumbers.push(num);
+          }
         }
-    });
+      }
+    }
 
-    return {
-        even_numbers: evenNumbers,
-        odd_numbers: oddNumbers,
-        alphabets: alphabets
+    const response = {
+      user_id,
+      is_success: true,
+      evenNumbers,
+      oddNumbers,
+      uppercaseAlphabets,
     };
-}
 
-// Start the server
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server is running on port ${port}`);
+    res.json(response);
+  } catch (error) {
+    res.status(400).json({ is_success: false, error: error.message });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
